@@ -2,7 +2,7 @@
 /**
 * Plugin Name: FSM Custom Featured Image Caption
 * Description: Allows adding custom captions to the featured image of posts and pages
-* Version: 1.24
+* Version: 1.25
 * Author: Fesomia
 * Author URI: http://wp.fesomia.cat
 
@@ -756,7 +756,7 @@ function FSMCFIC_add_caption( $html, $post_id = false ) {
 		
 	// Generates the html for the figure and caption
 	$figure_class = current_filter() == 'divi_thumbnail_html'?'wp-caption-divi':'wp-caption';
-	$html = '<figure class="' . $figure_class . ' featured">' . $html . $figcaption . '</figure>';
+	$html = '<figure class="' . $figure_class . ' fsmcfi-fig featured">' . $html . $figcaption . '</figure>';
 
 	return $html;
 		
@@ -795,15 +795,100 @@ function FSMCFIC_post_featured_image_filter( $html, $post_id) {
 	//if  the post already contains the shortcode don't show the featured image twice
 	if (!$is_list && has_shortcode($post->post_content, 'FSM_featured_image')) {return ''; }
 
-	
+
 	return FSMCFIC_add_caption($html, $post_id);
 	
 	
-}	
+}
+
+
+
+
+
+
+function FSMCFIC_featured_image_block_fix ($block_content, $block) {
+    // Check if the block is the featured image block and DOMDocument is enabled
+    if ($block['blockName'] === 'core/post-featured-image' && class_exists('DOMDocument')) {
+         // Detect the encoding of the original content
+		 
+		// Detect if there's a bested fsmcfi figure, if not, return
+		if (strpos($block_content, '<figure') === false || 
+			strpos($block_content, 'fsmcfi-fig') === false) {
+			return $block_content;
+		}
+		 
+        $current_encoding = mb_detect_encoding($block_content, mb_list_encodings(), true);
+        
+        // If not in UTF-8, convert to UTF-8 for processing
+        if ($current_encoding !== 'UTF-8') {
+            $block_content = mb_convert_encoding($block_content, 'UTF-8', $current_encoding);
+        }
+		
+	
+        
+        // Load the HTML content into a DOMDocument object
+        $dom = new DOMDocument();
+        
+        // To avoid warnings for HTML5, use libxml to handle malformed tags
+        libxml_use_internal_errors(true);
+        
+        // Load the block content
+        $dom->loadHTML(mb_convert_encoding($block_content, 'HTML-ENTITIES', 'UTF-8'));
+        
+        // Find all <figure> elements
+        $figures = $dom->getElementsByTagName('figure');
+        
+        // Iterate over the found <figure> elements
+        foreach ($figures as $figure) {
+            // Check if this <figure> is inside another <figure>
+            $parent = $figure->parentNode;
+            
+            // If the <figure> is inside another and has the 'featured' class
+            if ($parent && $parent->nodeName === 'figure' && $figure->hasAttribute('class') && strpos($figure->getAttribute('class'), 'featured') !== false) {
+                 // Move the children of the inner <figure> to the outer
+                $children = iterator_to_array($figure->childNodes);
+                
+                foreach ($children as $child) {                   
+                    $parent->insertBefore($child, $figure);
+                }
+
+                // Transfer the classes from the inner <figure>
+                $parent_classes = $parent->getAttribute('class');
+                $figure_classes = $figure->getAttribute('class');
+                $new_classes = trim($parent_classes . ' ' . $figure_classes);
+                $parent->setAttribute('class', $new_classes);
+
+                // Remove the inner <figure>
+                $parent->removeChild($figure);
+            }
+        }
+        
+        $modified_content = $dom->saveHTML();
+        
+        // If the original encoding was not UTF-8, convert back to the original encoding
+        if ($current_encoding !== 'UTF-8') {
+            $modified_content = mb_convert_encoding($modified_content, $current_encoding, 'UTF-8');
+        }
+        
+        
+        libxml_clear_errors();
+        
+
+        return $modified_content;
+    }
+    
+    return $block_content;
+}
+
+
+
+
+
+	
 	
 add_filter( 'post_thumbnail_html', 'FSMCFIC_post_featured_image_filter',20,2 );
 add_filter( 'divi_thumbnail_html', 'FSMCFIC_post_featured_image_filter',20,2 );
-
+add_filter('render_block', 'FSMCFIC_featured_image_block_fix', 10, 2);
 
 
 

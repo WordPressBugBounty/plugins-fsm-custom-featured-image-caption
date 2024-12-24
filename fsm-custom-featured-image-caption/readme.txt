@@ -2,7 +2,7 @@
 Contributors: fesomia
 Tags: featured image, caption, images, credits, copyright
 Requires at least: 4
-Tested up to: 6.1
+Tested up to: 6.8
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -125,6 +125,9 @@ Note that the plugin only adds some tags to the image to show the caption, and o
 2. Plugin in the Post editing page.
 
 == Changelog ==
+
+= 1.25 =
+* Added a filter to prevent nested figure tags when using gutenberg themes. Tested compatibility up to wp 6.8
 
 = 1.24 =
 * Added a global option in the general settings page to ignore the image captions defined for the image in the Media library. Tested compatibility up to wp 6.1
