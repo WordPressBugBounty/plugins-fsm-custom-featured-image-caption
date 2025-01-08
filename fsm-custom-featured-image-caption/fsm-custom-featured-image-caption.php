@@ -2,7 +2,7 @@
 /**
 * Plugin Name: FSM Custom Featured Image Caption
 * Description: Allows adding custom captions to the featured image of posts and pages
-* Version: 1.25
+* Version: 1.25.1
 * Author: Fesomia
 * Author URI: http://wp.fesomia.cat
 
@@ -811,7 +811,7 @@ function FSMCFIC_featured_image_block_fix ($block_content, $block) {
     if ($block['blockName'] === 'core/post-featured-image' && class_exists('DOMDocument')) {
          // Detect the encoding of the original content
 		 
-		// Detect if there's a bested fsmcfi figure, if not, return
+		// Detect if there's a nested fsmcfi figure, if not, return
 		if (strpos($block_content, '<figure') === false || 
 			strpos($block_content, 'fsmcfi-fig') === false) {
 			return $block_content;
@@ -888,7 +888,9 @@ function FSMCFIC_featured_image_block_fix ($block_content, $block) {
 	
 add_filter( 'post_thumbnail_html', 'FSMCFIC_post_featured_image_filter',20,2 );
 add_filter( 'divi_thumbnail_html', 'FSMCFIC_post_featured_image_filter',20,2 );
-add_filter('render_block', 'FSMCFIC_featured_image_block_fix', 10, 2);
+
+//Disabled for now, as it creates some issues with codification
+//add_filter('render_block_core/post-featured-image', 'FSMCFIC_featured_image_block_fix', 10, 2);
 
 
 

@@ -81,6 +81,8 @@ Usage example: `php
 the_FSM_featured_image_caption( array('tag' => 'p', 'class' => 'class1 class2', 'style' => 'color: red;', 'allow_html'=> true, 'allow_shortcodes'=>true );
 `
 
+In Gutenberg themes, the plugin generates a nested <figure> tag. If you need to ensure the resulting HTML code is syntactically proper, you can try using this filter in your theme functions.php file: `add_filter('render_block_core/post-featured-image', 'FSMCFIC_featured_image_block_fix', 10, 2);`
+
 = Translations =
 
 The plugin comes up with three complete translations:
@@ -125,6 +127,9 @@ Note that the plugin only adds some tags to the image to show the caption, and o
 2. Plugin in the Post editing page.
 
 == Changelog ==
+
+= 1.25.1 =
+* Rollback: Disabled nested figure filter for now as it created some codification problems
 
 = 1.25 =
 * Added a filter to prevent nested figure tags when using gutenberg themes. Tested compatibility up to wp 6.8
